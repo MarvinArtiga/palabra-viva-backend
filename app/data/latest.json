@@ -1,0 +1,23 @@
+{
+  "date": "2026-02-23",
+  "liturgicalName": "Tiempo Ordinario",
+  "liturgicalTitle": "Cátedra de San Pedro",
+  "liturgicalColor": "verde",
+  "gospel": {
+    "reference": "Mt 16, 13-19",
+    "title": "Tú eres Pedro",
+    "excerpt": "Tú eres Pedro y sobre esta piedra edificaré mi Iglesia...",
+    "text": "En aquel tiempo, al llegar a la región de Cesarea de Filipo..."
+  },
+  "firstReading": {
+    "reference": "1 Pe 5, 1-4",
+    "title": "Exhortación a los presbíteros",
+    "text": "Queridos hermanos: A los presbíteros..."
+  },
+  "psalm": {
+    "reference": "Sal 22",
+    "title": "El Señor es mi pastor",
+    "text": "El Señor es mi pastor, nada me falta..."
+  },
+  "secondReading": null
+}
