@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import random
 import time
-from dataclasses import dataclass
 from datetime import date
 from typing import List
 
@@ -12,16 +11,10 @@ BASE = "https://www.dominicos.org"
 TODAY_URL = f"{BASE}/predicacion/evangelio-del-dia/hoy/"
 
 
-@dataclass
-class ScrapeFetch:
-    url: str
-    html: str
-
-
 def candidate_urls_for_date(d: date) -> List[str]:
     """
-    - Entre semana suele estar en evangelio-del-dia/{d-m-y}/
-    - Domingos/festivos suelen estar en homilia/{d-m-y}/lecturas/
+    - Entre semana: /predicacion/evangelio-del-dia/{d-m-y}/
+    - Domingos/festivos: /predicacion/homilia/{d-m-y}/lecturas/
     """
     evangelio = f"{BASE}/predicacion/evangelio-del-dia/{d.day}-{d.month}-{d.year}/"
     homilia_lecturas = f"{BASE}/predicacion/homilia/{d.day}-{d.month}-{d.year}/lecturas/"

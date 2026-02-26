@@ -1,21 +1,21 @@
 {
   "date": "2026-02-25",
   "liturgicalName": "Primera Semana de Cuaresma",
-  "liturgicalTitle": "Aceptar todo",
-  "liturgicalColor": null,
+  "liturgicalTitle": null,
+  "liturgicalColor": "morado",
   "gospel": {
-    "reference": "Lectura del santo evangelio según san Lucas 11, 29-32",
+    "reference": "Lc 11, 29-32",
     "title": null,
     "excerpt": "En aquel tiempo, la gente se apiñaba alrededor de Jesús, y él se puso a decirles:",
     "text": "En aquel tiempo, la gente se apiñaba alrededor de Jesús, y él se puso a decirles:\n\n«Esta generación es una generación perversa. Pide un signo, pero no se le dará más signo que el signo de Jonás. Pues como Jonás fue un signo para los habitantes de Nínive, lo mismo será el Hijo del hombre para esta generación.\n\nLa reina del Sur se levantará en el juicio contra los hombres de esta generación y hará que los condenen, porque ella vino desde los confines de la tierra para escuchar la sabiduría de Salomón, y aquí hay uno que es más que Salomón.\n\nLos hombres de Nínive se alzarán en el juicio contra esta generación y harán que la condenen; porque ellos se convirtieron con la proclamación de Jonás, y aquí hay uno que es más que Jonás»."
   },
   "firstReading": {
-    "reference": "Lectura de la profecía de Jonás 3, 1-10",
+    "reference": "Jon 3, 1-10",
     "title": null,
     "text": "El Señor dirigió la palabra a Jonás:\n\n«Ponte en marcha y ve a la gran ciudad de Nínive; allí les anunciarás el mensaje que yo te comunicaré».\n\nJonás se puso en marcha hacia Nínive, siguiendo la orden del Señor. Nínive era una ciudad inmensa; hacían falta tres días para recorrerla. Jonás empezó a recorrer la ciudad el primer día, proclamando:\n\n«Dentro de cuarenta días, Nínive será arrasada».\n\nLos ninivitas creyeron en Dios, proclamaron un ayuno y se vistieron con rudo sayal, desde el más importante al menor.\n\nLa noticia llegó a oídos del rey de Nínive, que se levantó de su trono, se despojó del manto real, se cubrió con rudo sayal y se sentó sobre el polvo. Después ordenó proclamar en Nínive este anuncio de parte del rey y de sus ministros:\n\n«Que hombres y animales, ganado mayor y menor no coman nada; que no pasten ni beban agua. Que hombres y animales se cubran con rudo sayal e invoquen a Dios con ardor. Que cada cual se convierta de su mal camino y abandone la violencia. ¡Quién sabe si Dios cambiará y se compadecerá, se arrepentirá de su violenta ira y no nos destruirá!».\n\nVio Dios su comportamiento, cómo habían abandonado el mal camino, y se arrepintió de la desgracia que había determinado enviarles. Así que no la ejecutó."
   },
   "psalm": {
-    "reference": "Salmo 50, 3-4. 12-13. 18-19 R/. Un corazón quebrantado y humillado, oh, Dios mío, tú no lo desprecias",
+    "reference": "Sal 19",
     "title": null,
     "text": "Misericordia, Dios mío, por tu bondad,\n\npor tu inmensa compasión borra mi culpa;\n\nlava del todo mi delito,\n\nlimpia mi pecado. R/.\n\nOh, Dios, crea en mí un corazón puro,\n\nrenuévame por dentro con espíritu firme.\n\nNo me arrojes lejos de tu rostro,\n\nno me quites tu santo espíritu. R/.\n\nLos sacrificios no te satisfacen:\n\nsi te ofreciera un holocausto, no lo querrías.\n\nEl sacrificio agradable a Dios\n\nes un espíritu quebrantado;\n\nun corazón quebrantado y humillado,\n\ntú, oh, Dios, tú no lo desprecias. R/."
   },
