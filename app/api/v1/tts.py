@@ -28,6 +28,19 @@ service = ReadingsService(storage)
 
 RE_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 TTS_CACHE_DIR = Path("data/tts_cache")
+SECTION_ALIASES = {
+    "gospel": "gospel",
+    "evangelio": "gospel",
+    "first": "first",
+    "primera": "first",
+    "lectura1": "first",
+    "psalm": "psalm",
+    "salmo": "psalm",
+    "second": "second",
+    "segunda": "second",
+    "lectura2": "second",
+    "all": "all",
+}
 
 
 def _validate_date_or_400(yyyy_mm_dd: str) -> None:
@@ -43,6 +56,14 @@ def _item_text(item: ReadingItem | None) -> str:
     if item is None:
         return ""
     return html_to_text(item.text)
+
+
+def _normalize_section_or_400(section: str) -> str:
+    normalized = SECTION_ALIASES.get(section.strip().lower())
+    if not normalized:
+        valid = "gospel, first, psalm, second, all"
+        raise HTTPException(status_code=400, detail=f"Invalid section. Use one of: {valid}")
+    return normalized
 
 
 def _build_section_text(reading: DailyReadings, section: str) -> str:
@@ -76,7 +97,7 @@ def _build_section_text(reading: DailyReadings, section: str) -> str:
 @router.get("/api/v1/tts/date/{yyyy_mm_dd}", include_in_schema=False)
 async def get_tts_by_date(
     yyyy_mm_dd: str,
-    section: Literal["gospel", "first", "psalm", "second", "all"] = Query(default="gospel"),
+    section: str = Query(default="gospel"),
     voice: str = Query(default=DEFAULT_VOICE),
     rate: float = Query(default=1.0, gt=0.1, le=3.0),
     format: Literal["mp3", "ogg"] = Query(default="mp3"),
@@ -88,6 +109,7 @@ async def get_tts_by_date(
     curl -L "http://localhost:8000/api/v1/tts/date/2026-02-27?section=gospel&voice=es-ES-AlvaroNeural&rate=1.0&format=mp3" --output evangelio.mp3
     """
     _validate_date_or_400(yyyy_mm_dd)
+    normalized_section = _normalize_section_or_400(section)
 
     try:
         reading = service.get_by_date(yyyy_mm_dd)
@@ -96,14 +118,14 @@ async def get_tts_by_date(
     except KeyError:
         raise HTTPException(status_code=404, detail=f"{yyyy_mm_dd} not found")
 
-    tts_text = _build_section_text(reading, section)
+    tts_text = _build_section_text(reading, normalized_section)
     if not tts_text:
-        raise HTTPException(status_code=404, detail=f"No text available for section '{section}'")
+        raise HTTPException(status_code=404, detail=f"No text available for section '{normalized_section}'")
 
     cache_path = build_cache_path(
         cache_dir=TTS_CACHE_DIR,
         date_str=yyyy_mm_dd,
-        section=section,
+        section=normalized_section,
         voice=voice,
         rate=rate,
         output_format=format,
@@ -122,7 +144,7 @@ async def get_tts_by_date(
             logger.exception(
                 "TTS dependency error for date=%s section=%s voice=%s rate=%s format=%s",
                 yyyy_mm_dd,
-                section,
+                normalized_section,
                 voice,
                 rate,
                 format,
@@ -132,7 +154,7 @@ async def get_tts_by_date(
             logger.exception(
                 "TTS generation error for date=%s section=%s voice=%s rate=%s format=%s",
                 yyyy_mm_dd,
-                section,
+                normalized_section,
                 voice,
                 rate,
                 format,
@@ -142,7 +164,7 @@ async def get_tts_by_date(
             logger.exception(
                 "TTS generation failed for date=%s section=%s voice=%s rate=%s format=%s",
                 yyyy_mm_dd,
-                section,
+                normalized_section,
                 voice,
                 rate,
                 format,
