@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+requests
+beautifulsoup4
+lxml
+pytest
+edge-tts
