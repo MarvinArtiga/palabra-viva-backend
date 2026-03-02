@@ -1,0 +1,93 @@
+name: Backend Prewarm
+
+on:
+  schedule:
+    - cron: "0 11 * * 1"
+  workflow_dispatch:
+
+jobs:
+  prewarm:
+    runs-on: ubuntu-latest
+    env:
+      BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
+    steps:
+      - name: Validate config
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${BACKEND_BASE_URL:-}" ]]; then
+            echo "ERROR: BACKEND_BASE_URL secret is not set"
+            exit 1
+          fi
+          echo "Using BACKEND_BASE_URL=${BACKEND_BASE_URL}"
+
+      - name: Compute today (UTC)
+        id: today
+        shell: bash
+        run: |
+          set -euo pipefail
+          TODAY="$(date -u +%F)"
+          echo "today=${TODAY}" >> "$GITHUB_OUTPUT"
+          echo "UTC today: ${TODAY}"
+
+      - name: Prewarm readings week
+        id: readings
+        shell: bash
+        run: |
+          set -euo pipefail
+          TODAY="${{ steps.today.outputs.today }}"
+          URL="${BACKEND_BASE_URL%/}/api/v1/readings/week/${TODAY}"
+
+          echo "Calling: ${URL}"
+          STATUS=$(curl -sS -o week.json -w "%{http_code}" "${URL}")
+          echo "Status: ${STATUS}"
+
+          if [[ "${STATUS}" != "200" ]]; then
+            echo "ERROR: Non-200 response from ${URL}"
+            echo "Response body:"
+            cat week.json || true
+            exit 1
+          fi
+
+          DAYS=$(python3 - << 'PY'
+import json
+with open("week.json", "r", encoding="utf-8") as f:
+    data = json.load(f)
+
+out = []
+for item in data.get("days", []):
+    d = item.get("date")
+    if d:
+        out.append(d)
+
+if not out:
+    raise SystemExit("No days found in /readings/week response")
+
+print(" ".join(out))
+PY
+)
+
+          echo "Week days: ${DAYS}"
+          echo "days=${DAYS}" >> "$GITHUB_OUTPUT"
+
+      - name: Prewarm TTS cache (gospel + psalm)
+        shell: bash
+        run: |
+          set -euo pipefail
+          DAYS="${{ steps.readings.outputs.days }}"
+
+          for DAY in ${DAYS}; do
+            for SECTION in gospel psalm; do
+              URL="${BACKEND_BASE_URL%/}/api/v1/tts/date/${DAY}?section=${SECTION}&rate=1.0&format=mp3"
+              echo "Calling: ${URL}"
+              STATUS=$(curl -sS -o /tmp/tts_response.json -w "%{http_code}" "${URL}")
+              echo "Status: ${STATUS}"
+
+              if [[ "${STATUS}" != "200" ]]; then
+                echo "ERROR: Non-200 response from ${URL}"
+                echo "Response body:"
+                cat /tmp/tts_response.json || true
+                exit 1
+              fi
+            done
+          done

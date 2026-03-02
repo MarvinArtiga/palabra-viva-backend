@@ -1,18 +1,19 @@
 import re
 from fastapi import APIRouter, HTTPException, Response
 
-from app.core.config import settings
 from app.core.cache import etag_for_file, last_modified_http
-from app.services.storage import FileStorage
+from app.core.paths import readings_cache_dir
 from app.services.readings_service import ReadingsService
+from app.services.storage import FileStorage
 
 router = APIRouter(tags=["readings"])
 
-storage = FileStorage(settings.data_dir)
+storage = FileStorage(str(readings_cache_dir()))
 service = ReadingsService(storage)
 
 RE_MONTH = re.compile(r"^\d{4}-\d{2}$")
 RE_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
 
 def apply_cache_headers(response: Response, filename: str):
     path = storage.path(filename)
@@ -21,6 +22,7 @@ def apply_cache_headers(response: Response, filename: str):
     response.headers["Last-Modified"] = last_modified_http(stat)
     response.headers["Cache-Control"] = "public, max-age=300"
 
+
 @router.get("/readings/latest")
 def get_latest(response: Response):
     try:
@@ -28,6 +30,7 @@ def get_latest(response: Response):
         return service.get_latest()
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="latest.json not found")
+
 
 @router.get("/readings/month/{yyyy_mm}")
 def get_month(yyyy_mm: str, response: Response):
@@ -40,6 +43,7 @@ def get_month(yyyy_mm: str, response: Response):
         return service.get_month(yyyy_mm)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail=f"{filename} not found")
+
 
 @router.get("/readings/date/{yyyy_mm_dd}")
 def get_by_date(yyyy_mm_dd: str, response: Response):

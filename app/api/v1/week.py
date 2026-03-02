@@ -1,16 +1,17 @@
 import re
 from datetime import datetime, timedelta, date as date_type
+
 from fastapi import APIRouter, HTTPException
 
-from app.core.config import settings
-from app.services.storage import FileStorage
+from app.core.paths import readings_cache_dir
 from app.services.readings_service import ReadingsService
+from app.services.storage import FileStorage
 
 router = APIRouter(tags=["readings"])
 
 RE_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
-storage = FileStorage(settings.data_dir)
+storage = FileStorage(str(readings_cache_dir()))
 service = ReadingsService(storage)
 
 

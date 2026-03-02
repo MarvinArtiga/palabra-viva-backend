@@ -11,7 +11,7 @@ from typing import Dict, Any, Optional, Tuple
 import requests
 from bs4 import BeautifulSoup
 
-from app.core.config import settings
+from app.core.paths import readings_cache_dir
 from app.scraper.dominicos import candidate_urls_for_date, polite_get
 
 
@@ -42,11 +42,13 @@ COOKIE_TRASH = (
     "cookies",
 )
 
+
 def _is_trash_line(line: str) -> bool:
     l = line.strip().lower()
     if not l:
         return True
     return any(t in l for t in COOKIE_TRASH)
+
 
 def _clean_inline(text: Optional[str]) -> Optional[str]:
     if not text:
@@ -58,6 +60,7 @@ def _clean_inline(text: Optional[str]) -> Optional[str]:
         t = re.sub(r"(?i)\baceptar todo\b", "", t).strip(" -–—|")
         t = t.strip()
     return t or None
+
 
 def _normalize_ws(text: str) -> str:
     lines = []
@@ -73,6 +76,7 @@ def _normalize_ws(text: str) -> str:
 
 # ---------------- Liturgical color (based on linksub3 text) ----------------
 # Regla exacta: T.O -> verde, Cuaresma/Adviento -> morado, Pascua/Navidad -> blanco, Semana Santa -> rojo.
+
 
 def _infer_liturgical_color(liturgical_name: Optional[str]) -> Optional[str]:
     if not liturgical_name:
@@ -122,12 +126,14 @@ BOOK_MAP = {
 
 VERSES_RE = re.compile(r"(\d+\s*,\s*\d+(?:\s*[-–]\s*\d+)?|\b\d+\b)")
 
+
 def _guess_book_abbrev(headline: str) -> Optional[str]:
     s = headline.lower()
     for k in sorted(BOOK_MAP.keys(), key=len, reverse=True):
         if k in s:
             return BOOK_MAP[k]
     return None
+
 
 def _normalize_reference(headline: str, default_book: Optional[str] = None) -> Tuple[str, Optional[str]]:
     h = _clean_inline(headline) or ""
@@ -153,6 +159,7 @@ def _normalize_reference(headline: str, default_book: Optional[str] = None) -> T
 
 # ---------------- HTML parsing ----------------
 
+
 def _find_h2_contains(soup: BeautifulSoup, needle: str):
     n = needle.lower()
     for h2 in soup.find_all("h2"):
@@ -160,6 +167,7 @@ def _find_h2_contains(soup: BeautifulSoup, needle: str):
         if n in t:
             return h2
     return None
+
 
 def _collect_section_text(h2):
     h3 = h2.find_next("h3")
@@ -180,6 +188,7 @@ def _collect_section_text(h2):
 
     return head, _normalize_ws("\n".join(parts))
 
+
 def _debug_dump(url: str, html: str) -> None:
     soup = BeautifulSoup(html, "lxml")
     h2s = [h.get_text(" ", strip=True) for h in soup.find_all("h2")]
@@ -188,6 +197,7 @@ def _debug_dump(url: str, html: str) -> None:
     print("H2 encontrados:", h2s[:30])
     print("Snippet:", soup.get_text("\n", strip=True)[:700])
     print("--- END DEBUG ---\n")
+
 
 def _parse_page(url: str, html: str) -> Dict[str, Any]:
     soup = BeautifulSoup(html, "lxml")
@@ -235,8 +245,9 @@ def _parse_page(url: str, html: str) -> Dict[str, Any]:
 
 # ---------------- Job ----------------
 
+
 def update_week(start: Optional[date] = None, days: int = 7) -> Dict[str, Any]:
-    data_dir = Path(settings.data_dir)
+    data_dir = readings_cache_dir()
     session = requests.Session()
 
     if start is None:

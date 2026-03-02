@@ -7,7 +7,7 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
 
-from app.core.config import settings
+from app.core.paths import readings_cache_dir, tts_cache_dir
 from app.models.readings import DailyReadings, ReadingItem
 from app.services.readings_service import ReadingsService
 from app.services.storage import FileStorage
@@ -23,11 +23,11 @@ from app.services.tts_service import (
 router = APIRouter(tags=["tts"])
 logger = logging.getLogger(__name__)
 
-storage = FileStorage(settings.data_dir)
+storage = FileStorage(str(readings_cache_dir()))
 service = ReadingsService(storage)
 
 RE_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-TTS_CACHE_DIR = Path("data/tts_cache")
+TTS_CACHE_DIR = Path(tts_cache_dir())
 SECTION_ALIASES = {
     "gospel": "gospel",
     "evangelio": "gospel",
