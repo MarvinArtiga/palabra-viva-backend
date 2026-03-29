@@ -10,6 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
+      CURL_ARGS: >-
+        -L
+        --retry 3
+        --retry-delay 2
+        --retry-all-errors
+        --connect-timeout 20
+        --max-time 120
     steps:
       - name: Validate config
         shell: bash
@@ -37,35 +44,20 @@ jobs:
           set -euo pipefail
           TODAY="${{ steps.today.outputs.today }}"
           URL="${BACKEND_BASE_URL%/}/api/v1/readings/week/${TODAY}"
+          WEEK_FILE="${RUNNER_TEMP}/week.json"
 
           echo "Calling: ${URL}"
-          STATUS=$(curl -sS -o week.json -w "%{http_code}" "${URL}")
+          STATUS=$(curl ${CURL_ARGS} -sS -o "${WEEK_FILE}" -w "%{http_code}" "${URL}")
           echo "Status: ${STATUS}"
 
           if [[ "${STATUS}" != "200" ]]; then
             echo "ERROR: Non-200 response from ${URL}"
             echo "Response body:"
-            cat week.json || true
+            cat "${WEEK_FILE}" || true
             exit 1
           fi
 
-          DAYS=$(python3 - << 'PY'
-import json
-with open("week.json", "r", encoding="utf-8") as f:
-    data = json.load(f)
-
-out = []
-for item in data.get("days", []):
-    d = item.get("date")
-    if d:
-        out.append(d)
-
-if not out:
-    raise SystemExit("No days found in /readings/week response")
-
-print(" ".join(out))
-PY
-)
+          DAYS=$(python3 -c 'import json, os; data=json.load(open(os.environ["WEEK_FILE"], encoding="utf-8")); out=[item.get("date") for item in data.get("days", []) if item.get("date")]; assert out, "No days found in /readings/week response"; print(" ".join(out))')
 
           echo "Week days: ${DAYS}"
           echo "days=${DAYS}" >> "$GITHUB_OUTPUT"
@@ -75,18 +67,19 @@ PY
         run: |
           set -euo pipefail
           DAYS="${{ steps.readings.outputs.days }}"
+          TTS_FILE="${RUNNER_TEMP}/tts_response.bin"
 
           for DAY in ${DAYS}; do
             for SECTION in gospel psalm; do
               URL="${BACKEND_BASE_URL%/}/api/v1/tts/date/${DAY}?section=${SECTION}&rate=1.0&format=mp3"
               echo "Calling: ${URL}"
-              STATUS=$(curl -sS -o /tmp/tts_response.json -w "%{http_code}" "${URL}")
+              STATUS=$(curl ${CURL_ARGS} -sS -o "${TTS_FILE}" -w "%{http_code}" "${URL}")
               echo "Status: ${STATUS}"
 
               if [[ "${STATUS}" != "200" ]]; then
                 echo "ERROR: Non-200 response from ${URL}"
                 echo "Response body:"
-                cat /tmp/tts_response.json || true
+                cat "${TTS_FILE}" || true
                 exit 1
               fi
             done
