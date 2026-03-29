@@ -57,7 +57,25 @@ jobs:
             exit 1
           fi
 
-          DAYS=$(python3 -c 'import json, os; data=json.load(open(os.environ["WEEK_FILE"], encoding="utf-8")); out=[item.get("date") for item in data.get("days", []) if item.get("date")]; assert out, "No days found in /readings/week response"; print(" ".join(out))')
+          DAYS=$(python3 - << 'PY'
+import json
+import os
+
+with open(os.environ["WEEK_FILE"], "r", encoding="utf-8") as f:
+    data = json.load(f)
+
+out = []
+for item in data.get("days", []):
+    d = item.get("date")
+    if d:
+        out.append(d)
+
+if not out:
+    raise SystemExit("No days found in /readings/week response")
+
+print(" ".join(out))
+PY
+)
 
           echo "Week days: ${DAYS}"
           echo "days=${DAYS}" >> "$GITHUB_OUTPUT"
